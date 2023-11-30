@@ -2,9 +2,11 @@ package com.mikky.bank.services.impl;
 
 import com.mikky.bank.dtos.AccountInfo;
 import com.mikky.bank.dtos.BankResponse;
+import com.mikky.bank.dtos.EmailDetails;
 import com.mikky.bank.dtos.UserRequest;
 import com.mikky.bank.entities.User;
 import com.mikky.bank.repositories.UserRepository;
+import com.mikky.bank.services.EmailService;
 import com.mikky.bank.services.UserService;
 import com.mikky.bank.utills.AccountUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public BankResponse createAccount(UserRequest userRequest) {
@@ -45,6 +50,14 @@ public class UserServiceImpl implements UserService {
                 .status("ACTIVE")
                 .build();
         User savedUser = userRepository.save(user);
+
+        // Send mail notification
+        EmailDetails accountCreationMail = EmailDetails.builder()
+                .recipient(savedUser.getEmail())
+                .subject("Account Creation")
+                .messageBody("Congratulations! You have successfully opened Account\n\n Account Holder Name : " + savedUser.getFirstName() + " " + savedUser.getLastName() + "\nAccount Number : " + savedUser.getAccountNumber() + "\n")
+                .build();
+        emailService.sendEmailAlert(accountCreationMail);
 
         BankResponse response = BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREATION_SUCCESS)
