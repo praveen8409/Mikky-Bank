@@ -1,9 +1,6 @@
 package com.mikky.bank.services;
 
-import com.mikky.bank.dtos.BankResponse;
-import com.mikky.bank.dtos.CreditDebitRequest;
-import com.mikky.bank.dtos.EnquiryRequest;
-import com.mikky.bank.dtos.UserRequest;
+import com.mikky.bank.dtos.*;
 
 public interface UserService {
 
@@ -12,5 +9,6 @@ public interface UserService {
     String nameEnquiry(EnquiryRequest enquiryRequest);
     BankResponse creditAccount(CreditDebitRequest request);
     BankResponse debitAccount(CreditDebitRequest request);
+    BankResponse transfer(TransferRequest request);
 
 }

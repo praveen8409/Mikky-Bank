@@ -1,9 +1,6 @@
 package com.mikky.bank.controllers;
 
-import com.mikky.bank.dtos.BankResponse;
-import com.mikky.bank.dtos.CreditDebitRequest;
-import com.mikky.bank.dtos.EnquiryRequest;
-import com.mikky.bank.dtos.UserRequest;
+import com.mikky.bank.dtos.*;
 import com.mikky.bank.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,13 +32,18 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("credit")
+    @PostMapping("/credit")
     public BankResponse creditAccount(@RequestBody CreditDebitRequest request){
         return userService.creditAccount(request);
     }
 
-    @PostMapping("debit")
+    @PostMapping("/debit")
     public BankResponse debitAccount(@RequestBody CreditDebitRequest request){
         return userService.debitAccount(request);
+    }
+
+    @PostMapping("/transfer")
+    public BankResponse transfer(@RequestBody TransferRequest request){
+        return userService.transfer(request);
     }
 }
