@@ -4,6 +4,7 @@ import com.mikky.bank.dtos.*;
 import com.mikky.bank.entities.User;
 import com.mikky.bank.repositories.UserRepository;
 import com.mikky.bank.services.EmailService;
+import com.mikky.bank.services.TransactionService;
 import com.mikky.bank.services.UserService;
 import com.mikky.bank.utills.AccountUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @Override
     public BankResponse createAccount(UserRequest userRequest) {
@@ -120,6 +124,14 @@ public class UserServiceImpl implements UserService {
         userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(request.getAmount()));
         userRepository.save(userToCredit);
 
+        // Saved Transaction
+        TransactionDto transaction = TransactionDto.builder()
+                .amount(request.getAmount())
+                .accountNumber(request.getAccountNumber())
+                .transactionType("CREDIT")
+                .build();
+        transactionService.transaction(transaction);
+
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREDITED_SUCCESS)
                 .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESS_MESSAGE)
@@ -157,6 +169,12 @@ public class UserServiceImpl implements UserService {
         else {
             userToDebit.setAccountBalance(userToDebit.getAccountBalance().subtract(request.getAmount()));
             userRepository.save(userToDebit);
+            TransactionDto transaction = TransactionDto.builder()
+                    .amount(request.getAmount())
+                    .accountNumber(request.getAccountNumber())
+                    .transactionType("DEBIT")
+                    .build();
+            transactionService.transaction(transaction);
             return BankResponse.builder()
                     .responseCode(AccountUtils.ACCOUNT_DEBITED_SUCCESS)
                     .responseMessage(AccountUtils.ACCOUNT_DEBITED_MESSAGE)
@@ -211,6 +229,19 @@ public class UserServiceImpl implements UserService {
                 .messageBody("The sum of " + request.getAmount() + " has been sent to your Account! from " + sourceUserName+"\nYour current balance is " + destinationAccountUser.getAccountBalance())
                 .build();
         emailService.sendEmailAlert(creditAlert);
+        TransactionDto transaction = TransactionDto.builder()
+                .amount(request.getAmount())
+                .accountNumber(sourceAccountUser.getAccountNumber())
+                .transactionType("DEBIT")
+                .build();
+        transactionService.transaction(transaction);
+
+        TransactionDto transaction1 = TransactionDto.builder()
+                .amount(request.getAmount())
+                .accountNumber(destinationAccountUser.getAccountNumber())
+                .transactionType("CREDIT")
+                .build();
+        transactionService.transaction(transaction1);
 
         return BankResponse.builder()
                 .responseCode("008")
